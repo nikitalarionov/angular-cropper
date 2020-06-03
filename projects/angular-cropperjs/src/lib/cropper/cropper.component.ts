@@ -1,4 +1,14 @@
-import { Component, OnInit, ViewEncapsulation, ElementRef, ViewChild, Input, EventEmitter, Output } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    ViewEncapsulation,
+    ElementRef,
+    ViewChild,
+    Input,
+    EventEmitter,
+    Output,
+    NgZone
+} from '@angular/core';
 import Cropper from 'cropperjs';
 
 export interface ImageCropperSetting {
@@ -37,7 +47,7 @@ export class CropperComponent implements OnInit {
     public imageElement: HTMLImageElement;
     public loadError: any;
 
-    constructor() { }
+    constructor(public ngZone: NgZone) {}
 
     ngOnInit() {
     }
@@ -47,39 +57,35 @@ export class CropperComponent implements OnInit {
      * @param ev
      */
     imageLoaded(ev: Event) {
-
-        //
         // Unset load error state
         this.loadError = false;
 
-        //
         // Setup image element
         const image = ev.target as HTMLImageElement;
         this.imageElement = image;
 
-        //
-        // Add crossOrigin?
-        if (this.cropperOptions.checkCrossOrigin) image.crossOrigin = 'anonymous';
+        this.ngZone.runOutsideAngular(() => {
 
-        //
-        // Image on ready event
-        image.addEventListener('ready', () => {
-            //
-            // Emit ready
-            this.ready.emit(true);
-
-            //
-            // Unset loading state
-            this.isLoading = false;
-
-            //
-            // Validate cropbox existance
-            if (this.cropbox) {
-
-                //
-                // Set cropbox data
-                this.cropper.setCropBoxData(this.cropbox);
+            // Add crossOrigin?
+            if (this.cropperOptions.checkCrossOrigin) {
+                image.crossOrigin = 'anonymous';
             }
+
+            // Image on ready event
+            image.addEventListener('ready', () => {
+                // Emit ready
+                this.ready.emit(true);
+
+                // Unset loading state
+                this.isLoading = false;
+
+                // Validate cropbox existance
+                if (this.cropbox) {
+
+                    // Set cropbox data
+                    this.cropper.setCropBoxData(this.cropbox);
+                }
+            });
         });
 
         //
@@ -108,7 +114,9 @@ export class CropperComponent implements OnInit {
             this.cropper.destroy();
             this.cropper = undefined;
         }
-        this.cropper = new Cropper(image, this.cropperOptions);
+        this.ngZone.runOutsideAngular(() => {
+            this.cropper = new Cropper(image, this.cropperOptions);
+        });
     }
 
     /**

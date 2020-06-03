@@ -12,6 +12,11 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "types": [],
+    "paths": {
+      "@angular/*": [
+        "../../node_modules/@angular/*"
+      ]
+    },
     "lib": [
       "dom",
       "es2015"
